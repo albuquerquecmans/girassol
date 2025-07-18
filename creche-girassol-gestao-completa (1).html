@@ -1,0 +1,138 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Creche Girassol - Gestão Avançada</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-yellow-50 min-h-screen flex flex-col items-center justify-center p-6">
+
+  <h1 class="text-4xl font-bold mb-6 text-yellow-700">Creche Girassol</h1>
+
+  <!-- Login -->
+  <div id="login" class="w-full max-w-sm bg-white rounded-xl shadow-md p-6">
+    <h2 class="text-2xl font-semibold mb-4 text-center">Login</h2>
+    <input id="login-user" type="text" placeholder="Usuário" class="w-full mb-3 p-2 border rounded-md" />
+    <input id="login-pass" type="password" placeholder="Senha" class="w-full mb-4 p-2 border rounded-md" />
+    <button onclick="fazerLogin()" class="w-full bg-yellow-600 text-white p-2 rounded-md hover:bg-yellow-700">
+      Entrar
+    </button>
+    <p class="text-sm mt-2 text-center text-gray-500">Usuário: demo | Senha: demo</p>
+  </div>
+
+  <!-- Painel -->
+  <div id="painel" class="hidden w-full max-w-5xl bg-white mt-8 p-6 rounded-xl shadow-md space-y-6">
+    <h2 class="text-2xl font-semibold text-yellow-700 mb-4">Painel de Gestão</h2>
+
+    <!-- Cadastro -->
+    <div class="border-t pt-4">
+      <h3 class="text-xl font-semibold mb-2">Cadastrar na Lista de Espera</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input id="responsavel" type="text" placeholder="Nome do responsável" class="p-2 border rounded-md" />
+        <input id="crianca" type="text" placeholder="Nome da criança" class="p-2 border rounded-md" />
+        <input id="contato" type="text" placeholder="Contato" class="p-2 border rounded-md" />
+        <select id="turno" class="p-2 border rounded-md">
+          <option value="">Selecione o turno</option>
+          <option value="Manhã">Manhã</option>
+          <option value="Tarde">Tarde</option>
+          <option value="Integral">Integral</option>
+        </select>
+      </div>
+      <button onclick="cadastrarEspera()" class="mt-4 bg-green-600 text-white p-2 rounded-md hover:bg-green-700">Cadastrar</button>
+    </div>
+
+    <!-- Interesse -->
+    <div class="border-t pt-4">
+      <h3 class="text-xl font-semibold mb-2">Manifestação de Interesse - Vagas Ociosas</h3>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+        <label><input type="checkbox" value="Segunda" class="dia-checkbox mr-1" />Segunda</label>
+        <label><input type="checkbox" value="Terça" class="dia-checkbox mr-1" />Terça</label>
+        <label><input type="checkbox" value="Quarta" class="dia-checkbox mr-1" />Quarta</label>
+        <label><input type="checkbox" value="Quinta" class="dia-checkbox mr-1" />Quinta</label>
+        <label><input type="checkbox" value="Sexta" class="dia-checkbox mr-1" />Sexta</label>
+      </div>
+      <button onclick="enviarInteresse()" class="mt-4 bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">Enviar Solicitação</button>
+    </div>
+
+    <!-- Painel visual -->
+    <div class="border-t pt-4">
+      <h3 class="text-xl font-semibold mb-2">Fila de Espera</h3>
+      <table class="w-full text-left table-auto border border-gray-300">
+        <thead class="bg-gray-100">
+          <tr><th class="p-2 border">Responsável</th><th class="p-2 border">Criança</th><th class="p-2 border">Contato</th><th class="p-2 border">Turno</th></tr>
+        </thead>
+        <tbody id="tabela-espera" class="text-sm"></tbody>
+      </table>
+      <button onclick="exportarCSV()" class="mt-4 bg-gray-700 text-white p-2 rounded-md hover:bg-gray-800">Exportar CSV</button>
+    </div>
+  </div>
+
+  <script>
+    let filaEspera = [];
+
+    function fazerLogin() {
+      const user = document.getElementById('login-user').value;
+      const pass = document.getElementById('login-pass').value;
+      if (user === 'demo' && pass === 'demo') {
+        document.getElementById('login').classList.add('hidden');
+        document.getElementById('painel').classList.remove('hidden');
+      } else {
+        alert('Usuário ou senha inválidos!');
+      }
+    }
+
+    function cadastrarEspera() {
+      const r = document.getElementById('responsavel').value;
+      const c = document.getElementById('crianca').value;
+      const t = document.getElementById('contato').value;
+      const u = document.getElementById('turno').value;
+      if (r && c && t && u) {
+        filaEspera.push({ r, c, t, u });
+        atualizarTabela();
+        alert('Cadastro realizado com sucesso!');
+        document.getElementById('responsavel').value = '';
+        document.getElementById('crianca').value = '';
+        document.getElementById('contato').value = '';
+        document.getElementById('turno').value = '';
+      } else {
+        alert('Preencha todos os campos.');
+      }
+    }
+
+    function atualizarTabela() {
+      const corpo = document.getElementById('tabela-espera');
+      corpo.innerHTML = '';
+      filaEspera.forEach(({ r, c, t, u }) => {
+        corpo.innerHTML += `<tr><td class="border p-2">${r}</td><td class="border p-2">${c}</td><td class="border p-2">${t}</td><td class="border p-2">${u}</td></tr>`;
+      });
+    }
+
+    function enviarInteresse() {
+      const checkboxes = document.querySelectorAll('.dia-checkbox');
+      const dias = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+      if (dias.length > 0) {
+        alert('Interesse registrado para: ' + dias.join(', '));
+        checkboxes.forEach(cb => cb.checked = false);
+      } else {
+        alert('Selecione ao menos um dia.');
+      }
+    }
+
+    function exportarCSV() {
+      const header = "Responsável,Criança,Contato,Turno\n";
+      const rows = filaEspera.map(({ r, c, t, u }) => `${r},${c},${t},${u}`).join("\n");
+      const blob = new Blob([header + rows], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'fila_espera.csv';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+
+</body>
+</html>
